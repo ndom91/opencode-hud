@@ -29,6 +29,7 @@ type ShellMessage = Extract<SessionMessage, { readonly type: "shell" }>;
 
 type AgentActivityProps = {
   readonly context: Plugin.Context;
+  readonly now: number;
   readonly sessionID: string;
 };
 
@@ -149,14 +150,8 @@ function ToolActivity(props: ToolActivityProps) {
   );
 }
 
-function ToolFailure(props: ToolActivityProps) {
-  const [now, setNow] = createSignal(Date.now());
-  const failure = () => recentToolFailure(latestToolParts(props.messages), now());
-
-  onMount(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1_000);
-    onCleanup(() => clearInterval(timer));
-  });
+function ToolFailure(props: ToolActivityProps & { readonly now: number }) {
+  const failure = () => recentToolFailure(latestToolParts(props.messages), props.now);
 
   return (
     <Show when={failure()}>
@@ -205,14 +200,6 @@ function latestToolParts(messages: ToolActivityProps["messages"]) {
 }
 
 function AgentActivity(props: AgentActivityProps) {
-  const [now, setNow] = createSignal(Date.now());
-
-  onMount(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1_000);
-
-    onCleanup(() => clearInterval(timer));
-  });
-
   const agents = () =>
     props.context.data.session
       .family(props.sessionID)
@@ -251,7 +238,7 @@ function AgentActivity(props: AgentActivityProps) {
               >
                 ◐ {agent.agent ?? "subagent"}
                 {agent.title ? `: ${agent.title}` : ""}
-                {` (${elapsedTime(now() - agent.time.created)})`}
+                {` (${elapsedTime(props.now - agent.time.created)})`}
                 <Show when={usage(agent)}>{(text) => text()}</Show>
               </text>
             )}
@@ -288,14 +275,12 @@ function CompactionActivity(props: {
   );
 }
 
-function ShellActivity(props: { readonly context: Plugin.Context; readonly messages: ToolActivityProps["messages"] }) {
-  const [now, setNow] = createSignal(Date.now());
+function ShellActivity(props: {
+  readonly context: Plugin.Context;
+  readonly messages: ToolActivityProps["messages"];
+  readonly now: number;
+}) {
   const shells = () => props.messages.filter(isRunningShell).slice(-2);
-
-  onMount(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1_000);
-    onCleanup(() => clearInterval(timer));
-  });
 
   return (
     <Show when={shells().length > 0}>
@@ -313,7 +298,7 @@ function ShellActivity(props: { readonly context: Plugin.Context; readonly messa
                 truncate
                 wrapMode="none"
               >
-                ◐ {shell.command} ({elapsedTime(now() - shell.time.created)})
+                ◐ {shell.command} ({elapsedTime(props.now - shell.time.created)})
               </text>
             )}
           </For>
@@ -378,6 +363,13 @@ function CodexUsageStatus(props: { readonly context: Plugin.Context; readonly se
 }
 
 function Hud(props: HudProps) {
+  const [now, setNow] = createSignal(Date.now());
+
+  onMount(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    onCleanup(() => clearInterval(timer));
+  });
+
   const session = () => {
     if (!props.sessionID) {
       return undefined;
@@ -464,14 +456,14 @@ function Hud(props: HudProps) {
         <CompactionActivity context={props.context} messages={messages()} usage={context()?.percent} />
       </Show>
       <Show when={props.options.shell}>
-        <ShellActivity context={props.context} messages={messages()} />
+        <ShellActivity context={props.context} messages={messages()} now={now()} />
       </Show>
       <Show when={props.options.tools}>
         <ToolActivity context={props.context} messages={messages()} />
-        <ToolFailure context={props.context} messages={messages()} />
+        <ToolFailure context={props.context} messages={messages()} now={now()} />
       </Show>
       <Show when={props.options.agents && props.sessionID}>
-        {(id) => <AgentActivity context={props.context} sessionID={id()} />}
+        {(id) => <AgentActivity context={props.context} now={now()} sessionID={id()} />}
       </Show>
     </box>
   );
