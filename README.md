@@ -4,7 +4,7 @@ OpneCode2 plugin to display a persistent status HUD below the text input in the
 TUI. It is a native TUI plugin, not an assistant-message renderer, so it does not add HUD
 content to a session transcript.
 
-![](./.github/assets/screenshot_003.png)
+![](./.github/assets/screenshot_004.png)
 
 ## 👨‍🏭 Setup
 
@@ -25,6 +25,8 @@ Add the plugin file to the `plugins` array in `~/.config/opencode/opencode.jsonc
   ]
 }
 ```
+
+To show 5h and weekly usage, we must query the OpenAI API via your system's Codex authorization. This is disabled by default. See [PRIVACY.md](./PRIVACY.md) before enabling it with `OPENCODE_HUD_CODEX_USAGE=1`.
 
 ## 🧑‍💻 Local Development
 
