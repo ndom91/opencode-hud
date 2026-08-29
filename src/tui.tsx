@@ -114,15 +114,19 @@ function ToolActivity(props: ToolActivityProps) {
   return (
     <Show when={activities().length > 0}>
       <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
-        <text fg={props.context.theme.text.subdued}>Tools</text>
-        <For each={activities().slice(-4)}>
-          {(activity) => (
-            <text flexShrink={1} fg={toolColor(props.context, activity.status)} minWidth={0} truncate wrapMode="none">
-              {toolMark(activity.status)} {activity.name}
-              {activity.count > 1 ? ` ×${activity.count}` : ""}
-            </text>
-          )}
-        </For>
+        <text flexShrink={0} fg={props.context.theme.text.subdued} wrapMode="none">
+          Tools
+        </text>
+        <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
+          <For each={activities().slice(-4)}>
+            {(activity) => (
+              <text flexShrink={1} fg={toolColor(props.context, activity.status)} minWidth={0} truncate wrapMode="none">
+                {toolMark(activity.status)} {activity.name}
+                {activity.count > 1 ? ` ×${activity.count}` : ""}
+              </text>
+            )}
+          </For>
+        </box>
       </box>
     </Show>
   );
@@ -161,13 +165,6 @@ function AgentActivity(props: AgentActivityProps) {
     onCleanup(() => clearInterval(timer));
   });
 
-  const status = (agent: NonNullable<ReturnType<Plugin.Context["data"]["session"]["get"]>>) => {
-    if (props.context.data.session.status(agent.id) === "running") {
-      return "running" as const;
-    }
-
-    return agent.outcome;
-  };
   const agents = () =>
     props.context.data.session
       .family(props.sessionID)
@@ -176,30 +173,32 @@ function AgentActivity(props: AgentActivityProps) {
         (agent): agent is NonNullable<typeof agent> =>
           agent !== undefined && agent.id !== props.sessionID && agent.parentID !== undefined,
       )
-      .filter((agent) => status(agent) !== undefined)
-      .sort((left, right) => {
-        const leftRunning = status(left) === "running";
-        const rightRunning = status(right) === "running";
-        if (leftRunning !== rightRunning) {
-          return leftRunning ? -1 : 1;
-        }
-
-        return right.time.updated - left.time.updated;
-      });
+      .filter((agent) => props.context.data.session.status(agent.id) === "running")
+      .sort((left, right) => right.time.updated - left.time.updated);
 
   return (
     <Show when={agents().length > 0}>
       <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
-        <text fg={props.context.theme.text.subdued}>Agents</text>
-        <For each={agents().slice(0, 3)}>
-          {(agent) => (
-            <text flexShrink={1} fg={agentColor(props.context, status(agent))} minWidth={0} truncate wrapMode="none">
-              {agentMark(status(agent))} {agent.agent ?? "subagent"}
-              {agent.title ? `: ${agent.title}` : ""}
-              {` (${elapsedTime((status(agent) === "running" ? now() : agent.time.updated) - agent.time.created)})`}
-            </text>
-          )}
-        </For>
+        <text flexShrink={0} fg={props.context.theme.text.subdued} wrapMode="none">
+          Agents
+        </text>
+        <box flexDirection="column" flexShrink={1} minWidth={0}>
+          <For each={agents().slice(0, 3)}>
+            {(agent) => (
+              <text
+                flexShrink={1}
+                fg={props.context.theme.text.status.running.default}
+                minWidth={0}
+                truncate
+                wrapMode="none"
+              >
+                ◐ {agent.agent ?? "subagent"}
+                {agent.title ? `: ${agent.title}` : ""}
+                {` (${elapsedTime(now() - agent.time.created)})`}
+              </text>
+            )}
+          </For>
+        </box>
       </box>
     </Show>
   );
@@ -290,20 +289,6 @@ function toolMark(status: "completed" | "error" | "running"): string {
   if (status === "completed") return "✓";
   if (status === "error") return "!";
   return "◐";
-}
-
-function agentColor(context: Plugin.Context, status: "running" | "succeeded" | "failed" | "interrupted" | undefined) {
-  if (status === "running") return context.theme.text.status.running.default;
-  if (status === "succeeded") return context.theme.text.feedback.success.default;
-  if (status === "failed") return context.theme.text.feedback.error.default;
-  return context.theme.text.feedback.warning.default;
-}
-
-function agentMark(status: "running" | "succeeded" | "failed" | "interrupted" | undefined): string {
-  if (status === "running") return "◐";
-  if (status === "succeeded") return "✓";
-  if (status === "failed") return "!";
-  return "-";
 }
 
 function vcsInput(context: Plugin.Context): { readonly location: { readonly directory: string } } | undefined {
