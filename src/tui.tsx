@@ -223,12 +223,15 @@ function AgentActivity(props: AgentActivityProps) {
       )
       .filter((agent) => props.context.data.session.status(agent.id) === "running")
       .sort((left, right) => right.time.updated - left.time.updated);
-  const usage = (agent: ReturnType<typeof agents>[number]) =>
-    contextPercent({
+  const usage = (agent: ReturnType<typeof agents>[number]) => {
+    const percent = contextPercent({
       model: agent.model,
       models: props.context.data.location.model.list(agent.location) ?? [],
       messages: props.context.data.session.message.list(agent.id),
     });
+
+    return percent === undefined ? undefined : ` · Context ${percent}%`;
+  };
 
   return (
     <Show when={agents().length > 0}>
@@ -249,7 +252,7 @@ function AgentActivity(props: AgentActivityProps) {
                 ◐ {agent.agent ?? "subagent"}
                 {agent.title ? `: ${agent.title}` : ""}
                 {` (${elapsedTime(now() - agent.time.created)})`}
-                <Show when={usage(agent) !== undefined}>{` · Context ${usage(agent)}%`}</Show>
+                <Show when={usage(agent)}>{(text) => text()}</Show>
               </text>
             )}
           </For>
