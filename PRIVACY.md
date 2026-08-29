@@ -1,5 +1,10 @@
 # Privacy
 
+All HUD rows other than optional Codex usage use data already available in
+OpenCode's local TUI runtime. They do not make network requests or persist
+session, tool, shell, agent, Git, or context data. A brief tool-failure row is
+derived in memory from the latest assistant turn and expires after 15 seconds.
+
 ## Codex Usage Polling
 
 Codex subscription usage is disabled by default. Set `OPENCODE_HUD_CODEX_USAGE=1` before starting OpenCode to enable it.

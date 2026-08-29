@@ -89,7 +89,9 @@ export function recentToolFailure(tools: readonly Tool[], now: number): Tool | u
   }
 }
 
-function contextDetails(input: ContextInput): { readonly limit: number; readonly percent: number; readonly used: number } | undefined {
+function contextDetails(
+  input: ContextInput,
+): { readonly limit: number; readonly percent: number; readonly used: number } | undefined {
   const message = latestAssistantWithTokens(input.messages);
   let modelRef = input.model;
   if (message?.model) {

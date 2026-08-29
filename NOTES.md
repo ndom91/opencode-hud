@@ -45,6 +45,15 @@ content. The probe requests mode `0600` for newly created output files.
 9. The V2 client exposes no Todo or Task resource. `subtask` is only present
    in command configuration and legacy V1 schemas, so the HUD cannot render
    authoritative native task progress.
+10. Child sessions retain their own `model`, `location`, and message list.
+    Their context usage can therefore be calculated with the same native-token
+    policy as the parent session, without querying a provider.
+11. Tool parts expose a stable ID, name, state, and `time.{created,completed}`.
+    A short tool-failure row can be derived from the newest failed part in the
+    latest assistant turn and expire locally from its completion timestamp.
+12. OpenCode exposes no compaction threshold. The HUD's 80% warning is a
+    conservative advisory based on the native context percentage; it must not
+    be described as the point at which OpenCode will compact.
 
 ## Observed Runtime Data
 
