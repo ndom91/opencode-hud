@@ -4,7 +4,7 @@ An experimental persistent status HUD for the OpenCode 2 terminal UI. It is a
 native TUI plugin, not an assistant-message renderer, so it does not add HUD
 content to a session transcript.
 
-![](./.github/assets/screenshot_001.png)
+![](./.github/assets/screenshot_002.png)
 
 ## Setup
 
