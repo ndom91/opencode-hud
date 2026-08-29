@@ -3,6 +3,7 @@ import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
 import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
+import { hudOptions, type HudOptions } from "./hud-options.js";
 
 type GitStatusProps = {
   readonly branch?: string;
@@ -14,6 +15,9 @@ type ToolActivityProps = {
   readonly context: Plugin.Context;
 };
 
+type SessionMessage = ToolActivityProps["messages"][number];
+type ShellMessage = Extract<SessionMessage, { readonly type: "shell" }>;
+
 type AgentActivityProps = {
   readonly context: Plugin.Context;
   readonly sessionID: string;
@@ -21,6 +25,7 @@ type AgentActivityProps = {
 
 type HudProps = {
   readonly context: Plugin.Context;
+  readonly options: HudOptions;
   readonly sessionID?: string;
 };
 
@@ -207,6 +212,59 @@ function AgentActivity(props: AgentActivityProps) {
   );
 }
 
+function CompactionActivity(props: {
+  readonly context: Plugin.Context;
+  readonly messages: ToolActivityProps["messages"];
+}) {
+  const compaction = () =>
+    props.messages.findLast((message) => message.type === "compaction" && message.status === "running");
+
+  return (
+    <Show when={compaction()}>
+      {(value) => (
+        <text fg={props.context.theme.text.status.running.default} wrapMode="none">
+          ◐ Compacting ({value().reason})
+        </text>
+      )}
+    </Show>
+  );
+}
+
+function ShellActivity(props: { readonly context: Plugin.Context; readonly messages: ToolActivityProps["messages"] }) {
+  const [now, setNow] = createSignal(Date.now());
+  const shells = () => props.messages.filter(isRunningShell).slice(-2);
+
+  onMount(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    onCleanup(() => clearInterval(timer));
+  });
+
+  return (
+    <Show when={shells().length > 0}>
+      <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
+        <text flexShrink={0} fg={props.context.theme.text.subdued} wrapMode="none">
+          Shell
+        </text>
+        <box flexDirection="column" flexShrink={1} minWidth={0}>
+          <For each={shells()}>
+            {(shell) => (
+              <text
+                flexShrink={1}
+                fg={props.context.theme.text.status.running.default}
+                minWidth={0}
+                truncate
+                wrapMode="none"
+              >
+                ◐ {shell.command} ({elapsedTime(now() - shell.time.created)})
+              </text>
+            )}
+          </For>
+        </box>
+      </box>
+    </Show>
+  );
+}
+
 function CodexUsageStatus(props: { readonly context: Plugin.Context; readonly separator: boolean }) {
   const [usage, setUsage] = createSignal<CodexUsage>();
 
@@ -319,22 +377,36 @@ function Hud(props: HudProps) {
           <text flexShrink={1} fg={props.context.theme.text.default} minWidth={0} truncate wrapMode="none">
             {projectPath()}
           </text>
-          <Show when={branch()}>
+          <Show when={props.options.git && branch()}>
             <text fg={props.context.theme.text.subdued}>:</text>
           </Show>
-          <GitStatus branch={branch()} context={props.context} />
+          <Show when={props.options.git}>
+            <GitStatus branch={branch()} context={props.context} />
+          </Show>
         </box>
       </Show>
       <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
-        <Show when={usage()}>
+        <Show when={props.options.context && usage()}>
           <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
             {usage()}
           </text>
         </Show>
-        <CodexUsageStatus context={props.context} separator={usage() !== undefined} />
+        <Show when={props.options.codexUsage}>
+          <CodexUsageStatus context={props.context} separator={props.options.context && usage() !== undefined} />
+        </Show>
       </box>
-      <ToolActivity context={props.context} messages={messages()} />
-      <Show when={props.sessionID}>{(id) => <AgentActivity context={props.context} sessionID={id()} />}</Show>
+      <Show when={props.options.compaction}>
+        <CompactionActivity context={props.context} messages={messages()} />
+      </Show>
+      <Show when={props.options.shell}>
+        <ShellActivity context={props.context} messages={messages()} />
+      </Show>
+      <Show when={props.options.tools}>
+        <ToolActivity context={props.context} messages={messages()} />
+      </Show>
+      <Show when={props.options.agents && props.sessionID}>
+        {(id) => <AgentActivity context={props.context} sessionID={id()} />}
+      </Show>
     </box>
   );
 }
@@ -351,6 +423,10 @@ function toolMark(status: "completed" | "error" | "running"): string {
   return "◐";
 }
 
+function isRunningShell(message: SessionMessage): message is ShellMessage {
+  return message.type === "shell" && message.status === "running";
+}
+
 function vcsInput(context: Plugin.Context): { readonly location: { readonly directory: string } } | undefined {
   const location = context.location;
   if (!location) {
@@ -363,9 +439,10 @@ function vcsInput(context: Plugin.Context): { readonly location: { readonly dire
 export default Plugin.define({
   id: "opencode-hud",
   setup(context) {
+    const options = hudOptions(context.options);
     return context.ui.slot({
       replace: "prompt.footer.status",
-      render: ({ sessionID }) => <Hud context={context} sessionID={sessionID} />,
+      render: ({ sessionID }) => <Hud context={context} options={options} sessionID={sessionID} />,
     });
   },
 });

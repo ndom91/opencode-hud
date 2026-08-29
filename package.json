@@ -1,7 +1,21 @@
 {
-  "name": "opencode-hud",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@ndom91/opencode-hud",
+  "version": "0.1.0",
+  "description": "Persistent native status HUD for the OpenCode 2 TUI.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndom91/opencode-hud.git"
+  },
+  "bugs": "https://github.com/ndom91/opencode-hud/issues",
+  "homepage": "https://github.com/ndom91/opencode-hud#readme",
+  "files": [
+    "src",
+    "!src/**/*.test.ts",
+    "README.md",
+    "PRIVACY.md",
+    "LICENSE"
+  ],
   "type": "module",
   "packageManager": "pnpm@11.8.0",
   "exports": {
@@ -31,5 +45,8 @@
     "@opentui/core": ">=0.5.8",
     "@opentui/solid": ">=0.5.8",
     "solid-js": ">=1.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

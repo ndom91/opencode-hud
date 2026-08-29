@@ -10,23 +10,44 @@ content to a session transcript.
 
 Requires Node.js 24+ and pnpm.
 
-```sh
-git clone https://github.com/ndom91/opencode-hud.git ~/.config/opencode/opencode-hud
-cd ~/.config/opencode/opencode-hud
-pnpm install --frozen-lockfile
-```
+Add the package to the `plugins` array in `~/.config/opencode/cli.json`:
 
-Add the plugin file to the `plugins` array in `~/.config/opencode/opencode.jsonc`:
-
-```jsonc
+```json
 {
   "plugins": [
-    "/Users/<username>/.config/opencode/opencode-hud/.opencode/plugins/tui/status.tsx"
+    "@ndom91/opencode-hud"
   ]
 }
 ```
 
+OpenCode downloads and loads the package. Restart OpenCode after changing the configuration.
+
 To show 5h and weekly usage, we must query the OpenAI API via your system's Codex authorization. This is disabled by default. See [PRIVACY.md](./PRIVACY.md) before enabling it with `OPENCODE_HUD_CODEX_USAGE=1`.
+
+## Configuration
+
+The default HUD shows all available status rows. Disable individual rows with package options:
+
+```json
+{
+  "plugins": [
+    {
+      "package": "@ndom91/opencode-hud",
+      "options": {
+        "agents": false,
+        "codexUsage": false,
+        "compaction": false,
+        "context": true,
+        "git": true,
+        "shell": true,
+        "tools": true
+      }
+    }
+  ]
+}
+```
+
+OpenCode's `Ctrl+P` -> **Open settings** opens its standard settings editor. Plugin options are JSON configuration, rather than a plugin-specific TUI settings screen.
 
 ## 🧑‍💻 Local Development
 
