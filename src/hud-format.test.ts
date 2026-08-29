@@ -7,6 +7,7 @@ import {
   elapsedTime,
   gitSummary,
   modelRef,
+  recentToolFailure,
   toolActivity,
   type ContextInput,
 } from "./hud-format.js";
@@ -197,6 +198,22 @@ describe("toolActivity", () => {
       { name: "Glob", status: "completed", count: 1 },
       { name: "Read", status: "completed", count: 2 },
     ]);
+  });
+});
+
+describe("recentToolFailure", () => {
+  it("keeps the newest error visible for 15 seconds", () => {
+    const tools = [
+      { name: "Read", state: { status: "error" as const }, time: { created: 10_000, completed: 12_000 } },
+      { name: "Glob", state: { status: "error" as const }, time: { created: 13_000, completed: 14_000 } },
+    ];
+
+    expect(recentToolFailure(tools, 28_999)?.name).toBe("Glob");
+    expect(recentToolFailure(tools, 29_001)).toBeUndefined();
+  });
+
+  it("omits failures without native timestamps", () => {
+    expect(recentToolFailure([{ name: "Read", state: { status: "error" } }], 10_000)).toBeUndefined();
   });
 });
 

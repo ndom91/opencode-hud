@@ -2,6 +2,7 @@ const BAR_WIDTH = 16;
 const BLOCK_EMPTY = "░";
 const BLOCK_FILLED = "█";
 const COMPACTION_WARNING_PERCENT = 80;
+const TOOL_FAILURE_VISIBLE_MS = 15_000;
 
 export type AssistantMessage = {
   readonly model?: ModelRef;
@@ -38,6 +39,7 @@ export type TokenUsage = {
 export type Tool = {
   readonly name: string;
   readonly state: { readonly status: "streaming" | "running" | "completed" | "error" };
+  readonly time?: { readonly completed?: number; readonly created: number };
 };
 
 export type ToolActivity = {
@@ -70,6 +72,21 @@ export function contextPercent(input: ContextInput): number | undefined {
 // compactionWarning identifies context windows likely to trigger automatic compaction soon.
 export function compactionWarning(percent: number | undefined): boolean {
   return percent !== undefined && Number.isFinite(percent) && percent >= COMPACTION_WARNING_PERCENT;
+}
+
+// recentToolFailure returns the newest failure until its brief HUD visibility window expires.
+export function recentToolFailure(tools: readonly Tool[], now: number): Tool | undefined {
+  for (let index = tools.length - 1; index >= 0; index -= 1) {
+    const tool = tools[index];
+    if (tool?.state.status !== "error" || !tool.time) {
+      continue;
+    }
+
+    const completed = tool.time.completed ?? tool.time.created;
+    if (now - completed <= TOOL_FAILURE_VISIBLE_MS) {
+      return tool;
+    }
+  }
 }
 
 function contextDetails(input: ContextInput): { readonly limit: number; readonly percent: number; readonly used: number } | undefined {

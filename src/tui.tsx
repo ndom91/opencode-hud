@@ -2,7 +2,16 @@ import { Plugin } from "@opencode-ai/plugin/tui";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
-import { compactionWarning, contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
+import {
+  compactionWarning,
+  contextPercent,
+  contextUsage,
+  elapsedTime,
+  gitSummary,
+  modelRef,
+  recentToolFailure,
+  toolActivity,
+} from "./hud-format.js";
 import { hudOptions, type HudOptions } from "./hud-options.js";
 
 type GitStatusProps = {
@@ -140,6 +149,26 @@ function ToolActivity(props: ToolActivityProps) {
   );
 }
 
+function ToolFailure(props: ToolActivityProps) {
+  const [now, setNow] = createSignal(Date.now());
+  const failure = () => recentToolFailure(latestToolParts(props.messages), now());
+
+  onMount(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    onCleanup(() => clearInterval(timer));
+  });
+
+  return (
+    <Show when={failure()}>
+      {(tool) => (
+        <text fg={props.context.theme.text.feedback.error.default} wrapMode="none">
+          ! {tool().name} failed
+        </text>
+      )}
+    </Show>
+  );
+}
+
 function recentToolParts(messages: ToolActivityProps["messages"]) {
   const tools = [];
   const firstMessage = Math.max(0, messages.length - TOOL_HISTORY_MESSAGE_LIMIT);
@@ -162,6 +191,17 @@ function recentToolParts(messages: ToolActivityProps["messages"]) {
   }
 
   return tools.reverse();
+}
+
+function latestToolParts(messages: ToolActivityProps["messages"]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message?.type === "assistant") {
+      return message.content.filter((part) => part.type === "tool");
+    }
+  }
+
+  return [];
 }
 
 function AgentActivity(props: AgentActivityProps) {
@@ -435,6 +475,7 @@ function Hud(props: HudProps) {
       </Show>
       <Show when={props.options.tools}>
         <ToolActivity context={props.context} messages={messages()} />
+        <ToolFailure context={props.context} messages={messages()} />
       </Show>
       <Show when={props.options.agents && props.sessionID}>
         {(id) => <AgentActivity context={props.context} sessionID={id()} />}
