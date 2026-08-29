@@ -118,7 +118,7 @@ export function gitSummary(files: readonly VcsFile[]): string | undefined {
   return parts.join(" ");
 }
 
-// toolActivity groups the latest assistant's tools by state and name for a compact HUD row.
+// toolActivity groups a session's tool parts by state and name for a compact HUD row.
 export function toolActivity(tools: readonly Tool[]): readonly ToolActivity[] {
   const activities = new Map<string, { count: number; name: string; status: "completed" | "error" | "running" }>();
 

@@ -107,12 +107,11 @@ function GitStatus(props: GitStatusProps) {
 
 function ToolActivity(props: ToolActivityProps) {
   const activities = () => {
-    const assistant = props.messages.findLast((message) => message.type === "assistant");
-    if (!assistant) {
-      return [];
-    }
-
-    return toolActivity(assistant.content.filter((part) => part.type === "tool"));
+    return toolActivity(
+      props.messages.flatMap((message) =>
+        message.type === "assistant" ? message.content.filter((part) => part.type === "tool") : [],
+      ),
+    );
   };
 
   return (
