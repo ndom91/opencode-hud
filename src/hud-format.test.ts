@@ -212,6 +212,12 @@ describe("recentToolFailure", () => {
     expect(recentToolFailure(tools, 29_001)).toBeUndefined();
   });
 
+  it("omits failures with a future completion timestamp", () => {
+    const tools = [{ name: "Read", state: { status: "error" as const }, time: { created: 11_000, completed: 12_000 } }];
+
+    expect(recentToolFailure(tools, 10_000)).toBeUndefined();
+  });
+
   it("omits failures without native timestamps", () => {
     expect(recentToolFailure([{ name: "Read", state: { status: "error" } }], 10_000)).toBeUndefined();
   });

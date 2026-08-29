@@ -83,7 +83,7 @@ export function recentToolFailure(tools: readonly Tool[], now: number): Tool | u
     }
 
     const completed = tool.time.completed ?? tool.time.created;
-    if (now - completed <= TOOL_FAILURE_VISIBLE_MS) {
+    if (now >= completed && now - completed <= TOOL_FAILURE_VISIBLE_MS) {
       return tool;
     }
   }
