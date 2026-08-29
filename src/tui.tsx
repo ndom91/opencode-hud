@@ -23,6 +23,9 @@ type HudProps = {
   readonly sessionID?: string;
 };
 
+const TOOL_HISTORY_MESSAGE_LIMIT = 32;
+const TOOL_HISTORY_PART_LIMIT = 24;
+
 function GitStatus(props: GitStatusProps) {
   const [files, setFiles] = createSignal<
     readonly { additions: number; deletions: number; status: "added" | "deleted" | "modified" }[]
@@ -106,13 +109,7 @@ function GitStatus(props: GitStatusProps) {
 }
 
 function ToolActivity(props: ToolActivityProps) {
-  const activities = () => {
-    return toolActivity(
-      props.messages.flatMap((message) =>
-        message.type === "assistant" ? message.content.filter((part) => part.type === "tool") : [],
-      ),
-    );
-  };
+  const activities = () => toolActivity(recentToolParts(props.messages));
 
   return (
     <Show when={activities().length > 0}>
@@ -129,6 +126,30 @@ function ToolActivity(props: ToolActivityProps) {
       </box>
     </Show>
   );
+}
+
+function recentToolParts(messages: ToolActivityProps["messages"]) {
+  const tools = [];
+  const firstMessage = Math.max(0, messages.length - TOOL_HISTORY_MESSAGE_LIMIT);
+
+  for (let messageIndex = messages.length - 1; messageIndex >= firstMessage; messageIndex -= 1) {
+    const message = messages[messageIndex];
+    if (!message || message.type !== "assistant") {
+      continue;
+    }
+
+    for (let partIndex = message.content.length - 1; partIndex >= 0; partIndex -= 1) {
+      const part = message.content[partIndex];
+      if (part?.type === "tool") {
+        tools.push(part);
+        if (tools.length === TOOL_HISTORY_PART_LIMIT) {
+          return tools.reverse();
+        }
+      }
+    }
+  }
+
+  return tools.reverse();
 }
 
 function AgentActivity(props: AgentActivityProps) {
