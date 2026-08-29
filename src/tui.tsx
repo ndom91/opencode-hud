@@ -2,7 +2,7 @@ import { Plugin } from "@opencode-ai/plugin/tui";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
-import { contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
+import { compactionWarning, contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
 import { hudOptions, type HudOptions } from "./hud-options.js";
 
 type GitStatusProps = {
@@ -222,18 +222,26 @@ function AgentActivity(props: AgentActivityProps) {
 function CompactionActivity(props: {
   readonly context: Plugin.Context;
   readonly messages: ToolActivityProps["messages"];
+  readonly usage: number | undefined;
 }) {
   const compaction = () =>
     props.messages.findLast((message) => message.type === "compaction" && message.status === "running");
 
   return (
-    <Show when={compaction()}>
-      {(value) => (
-        <text fg={props.context.theme.text.status.running.default} wrapMode="none">
-          ◐ Compacting ({value().reason})
+    <>
+      <Show when={compaction()}>
+        {(value) => (
+          <text fg={props.context.theme.text.status.running.default} wrapMode="none">
+            ◐ Compacting ({value().reason})
+          </text>
+        )}
+      </Show>
+      <Show when={!compaction() && compactionWarning(props.usage)}>
+        <text fg={props.context.theme.text.feedback.warning.default} wrapMode="none">
+          ! Context {props.usage}% · compaction likely soon
         </text>
-      )}
-    </Show>
+      </Show>
+    </>
   );
 }
 
@@ -377,6 +385,23 @@ function Hud(props: HudProps) {
       messages: messages(),
     });
   };
+  const usagePercent = () => {
+    const current = session();
+    if (!current) {
+      return undefined;
+    }
+
+    const models = props.context.data.location.model.list(current.location);
+    if (!models) {
+      return undefined;
+    }
+
+    return contextPercent({
+      model: selectedModel(),
+      models,
+      messages: messages(),
+    });
+  };
   return (
     <box flexDirection="column" flexShrink={1} minWidth={0}>
       <Show when={projectPath()}>
@@ -403,7 +428,7 @@ function Hud(props: HudProps) {
         </Show>
       </box>
       <Show when={props.options.compaction}>
-        <CompactionActivity context={props.context} messages={messages()} />
+        <CompactionActivity context={props.context} messages={messages()} usage={usagePercent()} />
       </Show>
       <Show when={props.options.shell}>
         <ShellActivity context={props.context} messages={messages()} />

@@ -1,6 +1,7 @@
 const BAR_WIDTH = 16;
 const BLOCK_EMPTY = "░";
 const BLOCK_FILLED = "█";
+const COMPACTION_WARNING_PERCENT = 80;
 
 export type AssistantMessage = {
   readonly model?: ModelRef;
@@ -64,6 +65,11 @@ export function contextUsage(input: ContextInput): string | undefined {
 // contextPercent returns only the native context-window percentage for compact HUD rows.
 export function contextPercent(input: ContextInput): number | undefined {
   return contextDetails(input)?.percent;
+}
+
+// compactionWarning identifies context windows likely to trigger automatic compaction soon.
+export function compactionWarning(percent: number | undefined): boolean {
+  return percent !== undefined && Number.isFinite(percent) && percent >= COMPACTION_WARNING_PERCENT;
 }
 
 function contextDetails(input: ContextInput): { readonly limit: number; readonly percent: number; readonly used: number } | undefined {

@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity, type ContextInput } from "./hud-format.js";
+import {
+  compactionWarning,
+  contextPercent,
+  contextUsage,
+  elapsedTime,
+  gitSummary,
+  modelRef,
+  toolActivity,
+  type ContextInput,
+} from "./hud-format.js";
 
 const context = (input: Partial<ContextInput>): ContextInput => ({
   messages: [],
@@ -123,6 +132,19 @@ describe("contextPercent", () => {
 
   it("omits the percentage when usage cannot be derived", () => {
     expect(contextPercent(context({ messages: [{ type: "assistant" }] }))).toBeUndefined();
+  });
+});
+
+describe("compactionWarning", () => {
+  it("warns when context usage reaches 80 percent", () => {
+    expect(compactionWarning(79)).toBe(false);
+    expect(compactionWarning(80)).toBe(true);
+    expect(compactionWarning(100)).toBe(true);
+  });
+
+  it("omits the warning without a valid context percentage", () => {
+    expect(compactionWarning(undefined)).toBe(false);
+    expect(compactionWarning(Number.NaN)).toBe(false);
   });
 });
 
