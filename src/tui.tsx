@@ -1,7 +1,7 @@
 import { Plugin } from "@opencode-ai/plugin/tui";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
-import { contextUsage, gitSummary, modelRef, toolActivity } from "./hud-format.js";
+import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
 
 type GitStatusProps = {
   readonly branch?: string;
@@ -132,17 +132,36 @@ function ToolActivity(props: ToolActivityProps) {
 }
 
 function AgentActivity(props: AgentActivityProps) {
+  const [now, setNow] = createSignal(Date.now());
+
+  onMount(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+
+    onCleanup(() => clearInterval(timer));
+  });
+
+  const status = (agent: NonNullable<ReturnType<Plugin.Context["data"]["session"]["get"]>>) => {
+    if (props.context.data.session.status(agent.id) === "running") {
+      return "running" as const;
+    }
+
+    return agent.outcome;
+  };
   const agents = () =>
     props.context.data.session
       .family(props.sessionID)
       .map((id) => props.context.data.session.get(id))
-      .filter(
-        (agent): agent is NonNullable<typeof agent> =>
-          agent !== undefined &&
-          agent.id !== props.sessionID &&
-          agent.parentID !== undefined &&
-          props.context.data.session.status(agent.id) === "running",
-      );
+      .filter((agent): agent is NonNullable<typeof agent> => agent?.parentID === props.sessionID)
+      .filter((agent) => status(agent) !== undefined)
+      .sort((left, right) => {
+        const leftRunning = status(left) === "running";
+        const rightRunning = status(right) === "running";
+        if (leftRunning !== rightRunning) {
+          return leftRunning ? -1 : 1;
+        }
+
+        return right.time.updated - left.time.updated;
+      });
 
   return (
     <Show when={agents().length > 0}>
@@ -150,15 +169,10 @@ function AgentActivity(props: AgentActivityProps) {
         <text fg={props.context.theme.text.subdued}>Agents</text>
         <For each={agents().slice(0, 3)}>
           {(agent) => (
-            <text
-              flexShrink={1}
-              fg={props.context.theme.text.status.running.default}
-              minWidth={0}
-              truncate
-              wrapMode="none"
-            >
-              ◐ {agent.agent ?? "subagent"}
+            <text flexShrink={1} fg={agentColor(props.context, status(agent))} minWidth={0} truncate wrapMode="none">
+              {agentMark(status(agent))} {agent.agent ?? "subagent"}
               {agent.title ? `: ${agent.title}` : ""}
+              {` (${elapsedTime((status(agent) === "running" ? now() : agent.time.updated) - agent.time.created)})`}
             </text>
           )}
         </For>
@@ -252,6 +266,20 @@ function toolMark(status: "completed" | "error" | "running"): string {
   if (status === "completed") return "✓";
   if (status === "error") return "!";
   return "◐";
+}
+
+function agentColor(context: Plugin.Context, status: "running" | "succeeded" | "failed" | "interrupted" | undefined) {
+  if (status === "running") return context.theme.text.status.running.default;
+  if (status === "succeeded") return context.theme.text.feedback.success.default;
+  if (status === "failed") return context.theme.text.feedback.error.default;
+  return context.theme.text.feedback.warning.default;
+}
+
+function agentMark(status: "running" | "succeeded" | "failed" | "interrupted" | undefined): string {
+  if (status === "running") return "◐";
+  if (status === "succeeded") return "✓";
+  if (status === "failed") return "!";
+  return "-";
 }
 
 function vcsInput(context: Plugin.Context): { readonly location: { readonly directory: string } } | undefined {

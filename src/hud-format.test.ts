@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { contextUsage, gitSummary, modelRef, toolActivity, type ContextInput } from "./hud-format.js";
+import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity, type ContextInput } from "./hud-format.js";
 
 const context = (input: Partial<ContextInput>): ContextInput => ({
   messages: [],
@@ -152,5 +152,13 @@ describe("toolActivity", () => {
       { name: "Glob", status: "completed", count: 1 },
       { name: "Read", status: "completed", count: 2 },
     ]);
+  });
+});
+
+describe("elapsedTime", () => {
+  it("formats elapsed time in compact units", () => {
+    expect(elapsedTime(59_900)).toBe("59s");
+    expect(elapsedTime(61_000)).toBe("1m 1s");
+    expect(elapsedTime(3_661_000)).toBe("1h 1m");
   });
 });
