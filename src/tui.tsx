@@ -151,7 +151,10 @@ function AgentActivity(props: AgentActivityProps) {
     props.context.data.session
       .family(props.sessionID)
       .map((id) => props.context.data.session.get(id))
-      .filter((agent): agent is NonNullable<typeof agent> => agent?.parentID === props.sessionID)
+      .filter(
+        (agent): agent is NonNullable<typeof agent> =>
+          agent !== undefined && agent.id !== props.sessionID && agent.parentID !== undefined,
+      )
       .filter((agent) => status(agent) !== undefined)
       .sort((left, right) => {
         const leftRunning = status(left) === "running";
