@@ -36,6 +36,12 @@ content. The probe requests mode `0600` for newly created output files.
    parent prompt footer. The published slot API cannot suppress it selectively;
    replacing `prompt.footer` would also suppress the host command hint, file
    footer, and other plugin footer contributions.
+7. The current plugin/API surface exposes no provider subscriber daily or
+   weekly rate-limit windows. The HUD only renders native per-session context
+   data; it does not estimate or scrape provider limits.
+8. Assistant message content includes tool parts with a stable name and
+   `streaming`, `running`, `completed`, or `error` state. Session families and
+   session status expose active subagents without transcript parsing.
 
 ## Observed Runtime Data
 

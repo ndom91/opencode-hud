@@ -4,14 +4,7 @@ An experimental persistent status HUD for the OpenCode 2 terminal UI. It is a
 native TUI plugin, not an assistant-message renderer, so it does not add HUD
 content to a session transcript.
 
-## Current Status
-
-Milestone 2 provides a two-line HUD: project and git branch with dirty state,
-plus native context usage. The API probe findings are recorded in
-[NOTES.md](./NOTES.md).
-
-Tool activity, subagents, todos, git file statistics, and settings are not
-implemented yet. This repository is not published as an installable package.
+![](./.github/assets/screenshot_001.png)
 
 ## Local Development
 
@@ -23,9 +16,9 @@ Requirements:
 Install dependencies and validate the TypeScript source:
 
 ```sh
-npm install --legacy-peer-deps
-npm run check
-npm test
+pnpm install
+pnpm check
+pnpm test
 ```
 
 Start OpenCode from this repository:
@@ -35,7 +28,7 @@ opencode2 .
 ```
 
 OpenCode discovers `.opencode/plugins/tui/status.tsx` automatically. Start or
-open a session to see the static label under the prompt.
+open a session to see the HUD under the prompt.
 
 ## Probe Data
 

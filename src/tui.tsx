@@ -1,128 +1,267 @@
-import { Plugin } from "@opencode-ai/plugin/tui"
-import { createSignal, onCleanup, onMount, Show } from "solid-js"
+import { Plugin } from "@opencode-ai/plugin/tui";
+import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
-import { contextUsage, modelRef } from "./hud-format.js"
+import { contextUsage, gitSummary, modelRef, toolActivity } from "./hud-format.js";
 
-type GitStateProps = {
-  readonly context: Plugin.Context
-}
+type GitStatusProps = {
+  readonly branch?: string;
+  readonly context: Plugin.Context;
+};
+
+type ToolActivityProps = {
+  readonly messages: ReturnType<Plugin.Context["data"]["session"]["message"]["list"]>;
+  readonly context: Plugin.Context;
+};
+
+type AgentActivityProps = {
+  readonly context: Plugin.Context;
+  readonly sessionID: string;
+};
 
 type HudProps = {
-  readonly context: Plugin.Context
-  readonly sessionID?: string
-}
+  readonly context: Plugin.Context;
+  readonly sessionID?: string;
+};
 
-function GitState(props: GitStateProps) {
-  const [dirty, setDirty] = createSignal(false)
+function GitStatus(props: GitStatusProps) {
+  const [files, setFiles] = createSignal<
+    readonly { additions: number; deletions: number; status: "added" | "deleted" | "modified" }[]
+  >([]);
 
   onMount(() => {
-    let active = true
-    let generation = 0
+    let active = true;
+    let generation = 0;
 
     const refresh = async () => {
-      const request = generation + 1
-      generation = request
-      const input = vcsInput(props.context)
+      const request = generation + 1;
+      generation = request;
+      const input = vcsInput(props.context);
 
       try {
-        const status = await props.context.client.vcs.status(input)
+        const status = await props.context.client.vcs.status(input);
         if (active && request === generation) {
-          setDirty(status.data.length > 0)
+          setFiles(status.data);
         }
       } catch (error) {
         if (active && request === generation) {
-          setDirty(false)
+          setFiles([]);
         }
-        console.error("OpenCode HUD VCS status failed", error)
+        console.error("OpenCode HUD VCS status failed", error);
       }
-    }
+    };
 
     const refreshStatus = () => {
-      void refresh()
-    }
+      void refresh();
+    };
 
-    refreshStatus()
-    const stopFilesystem = props.context.data.on("filesystem.changed", refreshStatus)
-    const stopVcs = props.context.data.on("vcs.branch.updated", refreshStatus)
+    refreshStatus();
+    const stopFilesystem = props.context.data.on("filesystem.changed", refreshStatus);
+    const stopVcs = props.context.data.on("vcs.branch.updated", refreshStatus);
 
     onCleanup(() => {
-      active = false
-      stopFilesystem()
-      stopVcs()
-    })
-  })
+      active = false;
+      stopFilesystem();
+      stopVcs();
+    });
+  });
 
-  return <Show when={dirty()}><span> *</span></Show>
+  const dirty = () => files().length > 0;
+  const summary = () => gitSummary(files());
+
+  return (
+    <>
+      <Show when={props.branch}>
+        {(branch) => (
+          <text
+            flexShrink={1}
+            fg={
+              dirty()
+                ? props.context.theme.text.feedback.warning.default
+                : props.context.theme.text.feedback.success.default
+            }
+            minWidth={0}
+            truncate
+            wrapMode="none"
+          >
+            {branch()}
+            <Show when={dirty()}>
+              <span> *</span>
+            </Show>
+          </text>
+        )}
+      </Show>
+      <Show when={!props.branch && dirty()}>
+        <text fg={props.context.theme.text.feedback.warning.default}> *</text>
+      </Show>
+      <Show when={summary()}>
+        {(value) => (
+          <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
+            {" "}
+            {value()}
+          </text>
+        )}
+      </Show>
+    </>
+  );
+}
+
+function ToolActivity(props: ToolActivityProps) {
+  const activities = () => {
+    const assistant = props.messages.findLast((message) => message.type === "assistant");
+    if (!assistant) {
+      return [];
+    }
+
+    return toolActivity(assistant.content.filter((part) => part.type === "tool"));
+  };
+
+  return (
+    <Show when={activities().length > 0}>
+      <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
+        <text fg={props.context.theme.text.subdued}>Tools</text>
+        <For each={activities().slice(-4)}>
+          {(activity) => (
+            <text flexShrink={1} fg={toolColor(props.context, activity.status)} minWidth={0} truncate wrapMode="none">
+              {toolMark(activity.status)} {activity.name}
+              {activity.count > 1 ? ` ×${activity.count}` : ""}
+            </text>
+          )}
+        </For>
+      </box>
+    </Show>
+  );
+}
+
+function AgentActivity(props: AgentActivityProps) {
+  const agents = () =>
+    props.context.data.session
+      .family(props.sessionID)
+      .map((id) => props.context.data.session.get(id))
+      .filter(
+        (agent): agent is NonNullable<typeof agent> =>
+          agent !== undefined &&
+          agent.id !== props.sessionID &&
+          agent.parentID !== undefined &&
+          props.context.data.session.status(agent.id) === "running",
+      );
+
+  return (
+    <Show when={agents().length > 0}>
+      <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
+        <text fg={props.context.theme.text.subdued}>Agents</text>
+        <For each={agents().slice(0, 3)}>
+          {(agent) => (
+            <text
+              flexShrink={1}
+              fg={props.context.theme.text.status.running.default}
+              minWidth={0}
+              truncate
+              wrapMode="none"
+            >
+              ◐ {agent.agent ?? "subagent"}
+              {agent.title ? `: ${agent.title}` : ""}
+            </text>
+          )}
+        </For>
+      </box>
+    </Show>
+  );
 }
 
 function Hud(props: HudProps) {
   const session = () => {
     if (!props.sessionID) {
-      return undefined
+      return undefined;
     }
 
-    return props.context.data.session.get(props.sessionID)
-  }
+    return props.context.data.session.get(props.sessionID);
+  };
 
   const messages = () => {
-    const current = session()
+    const current = session();
     if (!current) {
-      return []
+      return [];
     }
 
-    return props.context.data.session.message.list(current.id)
-  }
-  const selectedModel = () => modelRef(session()?.model, messages())
-  const project = () => {
-    const location = props.context.location
+    return props.context.data.session.message.list(current.id);
+  };
+  const selectedModel = () => modelRef(session()?.model, messages());
+  const projectPath = () => {
+    const location = props.context.location;
     if (!location) {
-      return undefined
+      return undefined;
     }
 
-    const path = props.context.ui.format.path(location.directory)
-    const branch = props.context.data.location.vcs.info(location)?.branch.current
-    if (!branch) {
-      return path
+    return props.context.ui.format.path(location.directory);
+  };
+  const branch = () => {
+    const location = props.context.location;
+    if (!location) {
+      return undefined;
     }
 
-    return `${path}:${branch}`
-  }
+    return props.context.data.location.vcs.info(location)?.branch.current;
+  };
   const usage = () => {
-    const current = session()
+    const current = session();
     if (!current) {
-      return undefined
+      return undefined;
     }
 
-    const models = props.context.data.location.model.list(current.location)
+    const models = props.context.data.location.model.list(current.location);
     if (!models) {
-      return undefined
+      return undefined;
     }
 
     return contextUsage({
       model: selectedModel(),
       models,
       messages: messages(),
-    })
-  }
+    });
+  };
   return (
     <box flexDirection="column" flexShrink={1} minWidth={0}>
-      <Show when={project()}>
-        <text flexShrink={1} fg={props.context.theme.text.default} minWidth={0} truncate wrapMode="none">{project()}<GitState context={props.context} /></text>
+      <Show when={projectPath()}>
+        <box flexDirection="row" flexShrink={1} minWidth={0}>
+          <text flexShrink={1} fg={props.context.theme.text.default} minWidth={0} truncate wrapMode="none">
+            {projectPath()}
+          </text>
+          <Show when={branch()}>
+            <text fg={props.context.theme.text.subdued}>:</text>
+          </Show>
+          <GitStatus branch={branch()} context={props.context} />
+        </box>
       </Show>
       <Show when={usage()}>
-        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">{usage()}</text>
+        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
+          {usage()}
+        </text>
       </Show>
+      <ToolActivity context={props.context} messages={messages()} />
+      <Show when={props.sessionID}>{(id) => <AgentActivity context={props.context} sessionID={id()} />}</Show>
     </box>
-  )
+  );
+}
+
+function toolColor(context: Plugin.Context, status: "completed" | "error" | "running") {
+  if (status === "completed") return context.theme.text.feedback.success.default;
+  if (status === "error") return context.theme.text.feedback.error.default;
+  return context.theme.text.status.running.default;
+}
+
+function toolMark(status: "completed" | "error" | "running"): string {
+  if (status === "completed") return "✓";
+  if (status === "error") return "!";
+  return "◐";
 }
 
 function vcsInput(context: Plugin.Context): { readonly location: { readonly directory: string } } | undefined {
-  const location = context.location
+  const location = context.location;
   if (!location) {
-    return undefined
+    return undefined;
   }
 
-  return { location: { directory: location.directory } }
+  return { location: { directory: location.directory } };
 }
 
 export default Plugin.define({
@@ -131,6 +270,6 @@ export default Plugin.define({
     return context.ui.slot({
       replace: "prompt.footer.status",
       render: ({ sessionID }) => <Hud context={context} sessionID={sessionID} />,
-    })
+    });
   },
-})
+});

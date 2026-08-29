@@ -10,5 +10,5 @@
   it may use multiple non-wrapping lines when that improves readability.
 - Treat `opencode-hud-probe.json` as sensitive session data. It must remain
   ignored and never be added to commits.
-- Preserve the milestone boundary: implement, run `npm run check` and
-  `npm test`, then stop for user review before the next milestone.
+- Preserve the milestone boundary: implement, run `pnpm check` and `pnpm test`,
+  then stop for user review before the next milestone.

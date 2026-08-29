@@ -3,23 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.8.0",
   "exports": {
     ".": "./src/index.ts",
     "./tui": "./src/tui.tsx"
   },
   "scripts": {
     "check": "tsc --noEmit",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "beta"
+    "@opencode-ai/plugin": "0.0.0-beta-17898"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.11",
     "@opentui/core": "0.5.6",
     "@opentui/solid": "0.5.6",
     "@types/node": "^24.12.2",
     "solid-js": "1.9.10",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vitest": "^4.0.15"
   },
   "peerDependencies": {
