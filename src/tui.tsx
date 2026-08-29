@@ -1,5 +1,5 @@
 import { Plugin } from "@opencode-ai/plugin/tui";
-import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
 import {
@@ -408,7 +408,7 @@ function Hud(props: HudProps) {
 
     return props.context.data.location.vcs.info(location)?.branch.current;
   };
-  const usage = () => {
+  const context = createMemo(() => {
     const current = session();
     if (!current) {
       return undefined;
@@ -419,29 +419,14 @@ function Hud(props: HudProps) {
       return undefined;
     }
 
-    return contextUsage({
+    const input = {
       model: selectedModel(),
       models,
       messages: messages(),
-    });
-  };
-  const usagePercent = () => {
-    const current = session();
-    if (!current) {
-      return undefined;
-    }
+    };
 
-    const models = props.context.data.location.model.list(current.location);
-    if (!models) {
-      return undefined;
-    }
-
-    return contextPercent({
-      model: selectedModel(),
-      models,
-      messages: messages(),
-    });
-  };
+    return { percent: contextPercent(input), text: contextUsage(input) };
+  });
   return (
     <box flexDirection="column" flexShrink={1} minWidth={0}>
       <Show when={projectPath()}>
@@ -458,17 +443,22 @@ function Hud(props: HudProps) {
         </box>
       </Show>
       <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
-        <Show when={props.options.context && usage()}>
-          <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
-            {usage()}
-          </text>
+        <Show when={props.options.context && context()?.text}>
+          {(text) => (
+            <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
+              {text()}
+            </text>
+          )}
         </Show>
         <Show when={props.options.codexUsage}>
-          <CodexUsageStatus context={props.context} separator={props.options.context && usage() !== undefined} />
+          <CodexUsageStatus
+            context={props.context}
+            separator={props.options.context && context()?.text !== undefined}
+          />
         </Show>
       </box>
       <Show when={props.options.compaction}>
-        <CompactionActivity context={props.context} messages={messages()} usage={usagePercent()} />
+        <CompactionActivity context={props.context} messages={messages()} usage={context()?.percent} />
       </Show>
       <Show when={props.options.shell}>
         <ShellActivity context={props.context} messages={messages()} />
