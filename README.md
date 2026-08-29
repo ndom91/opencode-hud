@@ -6,13 +6,12 @@ content to a session transcript.
 
 ## Current Status
 
-Milestone 2 provides the default one-line HUD: model and provider, project and
-git branch with dirty state, native context usage, and session cost. The API
-probe findings are recorded in [NOTES.md](./NOTES.md).
+Milestone 2 provides a two-line HUD: project and git branch with dirty state,
+plus native context usage. The API probe findings are recorded in
+[NOTES.md](./NOTES.md).
 
-Tool activity, subagents, todos, git file statistics, settings, and multiline
-layouts are not implemented yet. This repository is not published as an
-installable package.
+Tool activity, subagents, todos, git file statistics, and settings are not
+implemented yet. This repository is not published as an installable package.
 
 ## Local Development
 

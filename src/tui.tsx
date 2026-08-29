@@ -1,7 +1,7 @@
 import { Plugin } from "@opencode-ai/plugin/tui"
 import { createSignal, onCleanup, onMount, Show } from "solid-js"
 
-import { contextUsage, formatCost, formatModel, modelRef } from "./hud-format.js"
+import { contextUsage, modelRef } from "./hud-format.js"
 
 type GitStateProps = {
   readonly context: Plugin.Context
@@ -104,28 +104,13 @@ function Hud(props: HudProps) {
       messages: messages(),
     })
   }
-  const cost = () => {
-    if (!props.sessionID) {
-      return undefined
-    }
-
-    return formatCost(props.context.data.session.cost(props.sessionID))
-  }
-
   return (
-    <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
-      <Show when={formatModel(selectedModel())}>{(value) => <text flexShrink={1} fg={props.context.theme.text.default} truncate wrapMode="none">{value()}</text>}</Show>
+    <box flexDirection="column" flexShrink={1} minWidth={0}>
       <Show when={project()}>
-        <text fg={props.context.theme.text.subdued}>·</text>
-        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">{project()}<GitState context={props.context} /></text>
+        <text flexShrink={1} fg={props.context.theme.text.default} minWidth={0} truncate wrapMode="none">{project()}<GitState context={props.context} /></text>
       </Show>
       <Show when={usage()}>
-        <text fg={props.context.theme.text.subdued}>·</text>
         <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">{usage()}</text>
-      </Show>
-      <Show when={cost()}>
-        <text fg={props.context.theme.text.subdued}>·</text>
-        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">{cost()}</text>
       </Show>
     </box>
   )

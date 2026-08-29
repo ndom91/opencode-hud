@@ -1,4 +1,4 @@
-const BAR_WIDTH = 8
+const BAR_WIDTH = 16
 const BLOCK_EMPTY = "░"
 const BLOCK_FILLED = "█"
 
@@ -36,7 +36,7 @@ export type TokenUsage = {
 
 // contextUsage formats the latest native token usage against the model context limit.
 export function contextUsage(input: ContextInput): string | undefined {
-  const message = latestAssistant(input.messages)
+  const message = latestAssistantWithTokens(input.messages)
   let modelRef = input.model
   if (message?.model) {
     modelRef = message.model
@@ -55,25 +55,7 @@ export function contextUsage(input: ContextInput): string | undefined {
 
   const percent = Math.min(100, Math.round((used / model.limit.context) * 100))
 
-  return `ctx ${bar(percent)} ${percent}% ${formatTokens(used)}/${formatTokens(model.limit.context)}`
-}
-
-// formatCost returns a compact USD representation of a session total.
-export function formatCost(cost: number): string | undefined {
-  if (!nonNegative(cost)) {
-    return undefined
-  }
-
-  return `$${cost.toFixed(2)}`
-}
-
-// formatModel returns the provider and model identifier for a selected model.
-export function formatModel(model?: ModelRef): string | undefined {
-  if (!model) {
-    return undefined
-  }
-
-  return `${model.providerID}/${model.id}`
+  return `Context ${bar(percent)} ${percent}%  ${formatTokens(used)} / ${formatTokens(model.limit.context)}`
 }
 
 // modelRef returns the selected session model or the latest assistant model as a fallback.
@@ -111,6 +93,15 @@ function latestAssistant(messages: readonly Message[]): AssistantMessage | undef
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index]
     if (message && isAssistant(message)) {
+      return message
+    }
+  }
+}
+
+function latestAssistantWithTokens(messages: readonly Message[]): AssistantMessage | undefined {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    if (message && isAssistant(message) && message.tokens) {
       return message
     }
   }

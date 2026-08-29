@@ -6,8 +6,8 @@
   assistant messages or start sidecar processes.
 - Do no blocking work in a slot render callback. Subscribe or poll in component
   lifecycle code, then render reactive state.
-- Use only `context.theme` tokens for TUI colors. Keep the default HUD to one
-  non-wrapping line.
+- Use only `context.theme` tokens for TUI colors. Keep the default HUD compact;
+  it may use multiple non-wrapping lines when that improves readability.
 - Treat `opencode-hud-probe.json` as sensitive session data. It must remain
   ignored and never be added to commits.
 - Preserve the milestone boundary: implement, run `npm run check` and

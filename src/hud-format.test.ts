@@ -1,21 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { contextUsage, formatCost, formatModel, modelRef, type ContextInput } from "./hud-format.js"
+import { contextUsage, modelRef, type ContextInput } from "./hud-format.js"
 
 const context = (input: Partial<ContextInput>): ContextInput => ({
   messages: [],
   models: [],
   ...input,
-})
-
-describe("formatModel", () => {
-  it("formats the provider and model identifier", () => {
-    expect(formatModel({ providerID: "openai", id: "gpt-5.6" })).toBe("openai/gpt-5.6")
-  })
-
-  it("omits an unavailable model", () => {
-    expect(formatModel()).toBeUndefined()
-  })
 })
 
 describe("modelRef", () => {
@@ -25,16 +15,6 @@ describe("modelRef", () => {
         { type: "assistant", model: { providerID: "anthropic", id: "claude-sonnet" } },
       ]),
     ).toEqual({ providerID: "anthropic", id: "claude-sonnet" })
-  })
-})
-
-describe("formatCost", () => {
-  it("formats USD to two decimal places", () => {
-    expect(formatCost(1.2)).toBe("$1.20")
-  })
-
-  it("omits invalid costs", () => {
-    expect(formatCost(Number.NaN)).toBeUndefined()
   })
 })
 
@@ -50,7 +30,7 @@ describe("contextUsage", () => {
           ],
         }),
       ),
-    ).toBe("ctx ████░░░░ 50% 50k/100k")
+    ).toBe("Context ████████░░░░░░░░ 50%  50k / 100k")
   })
 
   it("caps context usage at 100 percent", () => {
@@ -64,7 +44,7 @@ describe("contextUsage", () => {
           ],
         }),
       ),
-    ).toBe("ctx ████████ 100% 11/10")
+    ).toBe("Context ████████████████ 100%  11 / 10")
   })
 
   it("uses the token-bearing assistant model after a session model switch", () => {
@@ -85,7 +65,22 @@ describe("contextUsage", () => {
           ],
         }),
       ),
-    ).toBe("ctx ████░░░░ 50% 50/100")
+    ).toBe("Context ████████░░░░░░░░ 50%  50 / 100")
+  })
+
+  it("keeps the latest completed usage while a newer assistant message streams", () => {
+    expect(
+      contextUsage(
+        context({
+          model: { providerID: "openai", id: "gpt-5.6" },
+          models: [{ providerID: "openai", id: "gpt-5.6", limit: { context: 100 } }],
+          messages: [
+            { type: "assistant", tokens: { input: 25, output: 0, reasoning: 0, cache: { read: 0, write: 0 } } },
+            { type: "assistant" },
+          ],
+        }),
+      ),
+    ).toBe("Context ████░░░░░░░░░░░░ 25%  25 / 100")
   })
 
   it("omits usage without a matching model or assistant token usage", () => {

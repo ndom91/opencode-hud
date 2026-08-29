@@ -22,9 +22,9 @@ content. The probe requests mode `0600` for newly created output files.
    `session.compaction.started`, `session.compaction.ended`, and
    `session.compaction.failed`. The started/ended events carry the session ID,
    reason (`auto` or `manual`), and recent-message marker.
-3. No provider rate-limit window API is exposed by the documented TUI context
-   or the installed runtime surface inspected here. Showing 5h/7d usage would
-   require provider-specific network calls, which is outside v1.
+3. No provider rate-limit window API is exposed by the documented TUI context,
+   installed runtime surface, or local OpenCode OpenAPI schema. Showing 5h/7d
+   usage would require provider-specific network calls, which is outside v1.
 4. `context.ui.slot(...).render` receives reactive slot props. Reads of
    `context.data` inside a Solid component are reactive as well. The render
    callback itself should remain declarative; event subscriptions and polling
@@ -32,6 +32,10 @@ content. The probe requests mode `0600` for newly created output files.
 5. `data.location.vcs.info()` exposes branch information only. v1 uses the
    explicitly approved local OpenCode client request `client.vcs.status()` for
    dirty state, triggered by filesystem and branch events outside render.
+6. The host context usage is a hard-wired sibling of the command hint in the
+   parent prompt footer. The published slot API cannot suppress it selectively;
+   replacing `prompt.footer` would also suppress the host command hint, file
+   footer, and other plugin footer contributions.
 
 ## Observed Runtime Data
 
