@@ -2,7 +2,7 @@ import { Plugin } from "@opencode-ai/plugin/tui";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
-import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
+import { contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
 import { hudOptions, type HudOptions } from "./hud-options.js";
 
 type GitStatusProps = {
@@ -183,6 +183,12 @@ function AgentActivity(props: AgentActivityProps) {
       )
       .filter((agent) => props.context.data.session.status(agent.id) === "running")
       .sort((left, right) => right.time.updated - left.time.updated);
+  const usage = (agent: ReturnType<typeof agents>[number]) =>
+    contextPercent({
+      model: agent.model,
+      models: props.context.data.location.model.list(agent.location) ?? [],
+      messages: props.context.data.session.message.list(agent.id),
+    });
 
   return (
     <Show when={agents().length > 0}>
@@ -203,6 +209,7 @@ function AgentActivity(props: AgentActivityProps) {
                 ◐ {agent.agent ?? "subagent"}
                 {agent.title ? `: ${agent.title}` : ""}
                 {` (${elapsedTime(now() - agent.time.created)})`}
+                <Show when={usage(agent) !== undefined}>{` · Context ${usage(agent)}%`}</Show>
               </text>
             )}
           </For>

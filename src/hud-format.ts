@@ -53,6 +53,20 @@ export type VcsFile = {
 
 // contextUsage formats the latest native token usage against the model context limit.
 export function contextUsage(input: ContextInput): string | undefined {
+  const usage = contextDetails(input);
+  if (!usage) {
+    return undefined;
+  }
+
+  return `Context ${bar(usage.percent)} ${usage.percent}%  ${formatTokens(usage.used)} / ${formatTokens(usage.limit)}`;
+}
+
+// contextPercent returns only the native context-window percentage for compact HUD rows.
+export function contextPercent(input: ContextInput): number | undefined {
+  return contextDetails(input)?.percent;
+}
+
+function contextDetails(input: ContextInput): { readonly limit: number; readonly percent: number; readonly used: number } | undefined {
   const message = latestAssistantWithTokens(input.messages);
   let modelRef = input.model;
   if (message?.model) {
@@ -77,7 +91,7 @@ export function contextUsage(input: ContextInput): string | undefined {
 
   const percent = Math.min(100, Math.round((used / model.limit.context) * 100));
 
-  return `Context ${bar(percent)} ${percent}%  ${formatTokens(used)} / ${formatTokens(model.limit.context)}`;
+  return { used, limit: model.limit.context, percent };
 }
 
 // modelRef returns the selected session model or the latest assistant model as a fallback.

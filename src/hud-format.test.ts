@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity, type ContextInput } from "./hud-format.js";
+import { contextPercent, contextUsage, elapsedTime, gitSummary, modelRef, toolActivity, type ContextInput } from "./hud-format.js";
 
 const context = (input: Partial<ContextInput>): ContextInput => ({
   messages: [],
@@ -100,6 +100,29 @@ describe("contextUsage", () => {
         }),
       ),
     ).toBeUndefined();
+  });
+});
+
+describe("contextPercent", () => {
+  it("returns native usage as a compact percentage", () => {
+    expect(
+      contextPercent(
+        context({
+          model: { providerID: "openai", id: "gpt-5.6" },
+          models: [{ providerID: "openai", id: "gpt-5.6", limit: { context: 100_000 } }],
+          messages: [
+            {
+              type: "assistant",
+              tokens: { input: 35_000, output: 2_000, reasoning: 3_000, cache: { read: 10_000, write: 0 } },
+            },
+          ],
+        }),
+      ),
+    ).toBe(50);
+  });
+
+  it("omits the percentage when usage cannot be derived", () => {
+    expect(contextPercent(context({ messages: [{ type: "assistant" }] }))).toBeUndefined();
   });
 });
 
