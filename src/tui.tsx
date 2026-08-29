@@ -1,6 +1,7 @@
 import { Plugin } from "@opencode-ai/plugin/tui";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
+import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
 import { contextUsage, elapsedTime, gitSummary, modelRef, toolActivity } from "./hud-format.js";
 
 type GitStatusProps = {
@@ -25,6 +26,8 @@ type HudProps = {
 
 const TOOL_HISTORY_MESSAGE_LIMIT = 32;
 const TOOL_HISTORY_PART_LIMIT = 24;
+const CODEX_USAGE_REFRESH_MS = 30 * 60 * 1_000;
+const CODEX_USAGE_TIMEOUT_MS = 10 * 1_000;
 
 function GitStatus(props: GitStatusProps) {
   const [files, setFiles] = createSignal<
@@ -204,6 +207,60 @@ function AgentActivity(props: AgentActivityProps) {
   );
 }
 
+function CodexUsageStatus(props: { readonly context: Plugin.Context; readonly separator: boolean }) {
+  const [usage, setUsage] = createSignal<CodexUsage>();
+
+  onMount(() => {
+    if (!codexUsageEnabled()) {
+      return;
+    }
+
+    let active = true;
+    let generation = 0;
+    let request: AbortController | undefined;
+    const refresh = async () => {
+      const current = generation + 1;
+      generation = current;
+      request?.abort();
+      const controller = new AbortController();
+      request = controller;
+      const timeout = setTimeout(() => controller.abort(), CODEX_USAGE_TIMEOUT_MS);
+
+      try {
+        const value = await loadCodexUsage(controller.signal);
+        if (active && current === generation) {
+          setUsage(value);
+        }
+      } catch {
+        if (active && current === generation) {
+          setUsage(undefined);
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+
+    void refresh();
+    const interval = setInterval(() => void refresh(), CODEX_USAGE_REFRESH_MS);
+    onCleanup(() => {
+      active = false;
+      request?.abort();
+      clearInterval(interval);
+    });
+  });
+
+  return (
+    <Show when={usage()}>
+      {(value) => (
+        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
+          {props.separator ? "· " : ""}
+          {codexUsageText(value())}
+        </text>
+      )}
+    </Show>
+  );
+}
+
 function Hud(props: HudProps) {
   const session = () => {
     if (!props.sessionID) {
@@ -268,11 +325,14 @@ function Hud(props: HudProps) {
           <GitStatus branch={branch()} context={props.context} />
         </box>
       </Show>
-      <Show when={usage()}>
-        <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
-          {usage()}
-        </text>
-      </Show>
+      <box flexDirection="row" flexShrink={1} gap={1} minWidth={0}>
+        <Show when={usage()}>
+          <text flexShrink={1} fg={props.context.theme.text.subdued} minWidth={0} truncate wrapMode="none">
+            {usage()}
+          </text>
+        </Show>
+        <CodexUsageStatus context={props.context} separator={usage() !== undefined} />
+      </box>
       <ToolActivity context={props.context} messages={messages()} />
       <Show when={props.sessionID}>{(id) => <AgentActivity context={props.context} sessionID={id()} />}</Show>
     </box>

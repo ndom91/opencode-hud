@@ -23,8 +23,8 @@ content. The probe requests mode `0600` for newly created output files.
    `session.compaction.failed`. The started/ended events carry the session ID,
    reason (`auto` or `manual`), and recent-message marker.
 3. No provider rate-limit window API is exposed by the documented TUI context,
-   installed runtime surface, or local OpenCode OpenAPI schema. Showing 5h/7d
-   usage would require provider-specific network calls, which is outside v1.
+   installed runtime surface, or local OpenCode OpenAPI schema. Optional Codex
+   usage polling uses an explicit opt-in and an undocumented provider endpoint.
 4. `context.ui.slot(...).render` receives reactive slot props. Reads of
    `context.data` inside a Solid component are reactive as well. The render
    callback itself should remain declarative; event subscriptions and polling
@@ -38,7 +38,7 @@ content. The probe requests mode `0600` for newly created output files.
    footer, and other plugin footer contributions.
 7. The current plugin/API surface exposes no provider subscriber daily or
    weekly rate-limit windows. The HUD only renders native per-session context
-   data; it does not estimate or scrape provider limits.
+   data, except for the explicit opt-in Codex polling described in PRIVACY.md.
 8. Assistant message content includes tool parts with a stable name and
    `streaming`, `running`, `completed`, or `error` state. Session families and
    session status expose active subagents without transcript parsing.
