@@ -134,7 +134,7 @@ function recentToolParts(messages: ToolActivityProps["messages"]) {
 
   for (let messageIndex = messages.length - 1; messageIndex >= firstMessage; messageIndex -= 1) {
     const message = messages[messageIndex];
-    if (!message || message.type !== "assistant") {
+    if (message?.type !== "assistant") {
       continue;
     }
 
