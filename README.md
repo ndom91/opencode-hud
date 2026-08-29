@@ -6,6 +6,28 @@ content to a session transcript.
 
 ![](./.github/assets/screenshot_001.png)
 
+## Setup
+
+Requires Node.js 24+ and pnpm.
+
+```sh
+git clone https://github.com/ndom91/opencode-hud.git ~/.config/opencode/opencode-hud
+cd ~/.config/opencode/opencode-hud
+pnpm install --frozen-lockfile
+```
+
+Add the plugin file to the `plugins` array in `~/.config/opencode/opencode.jsonc`:
+
+```jsonc
+{
+  "plugins": [
+    "/Users/you/.config/opencode/opencode-hud/.opencode/plugins/tui/status.tsx"
+  ]
+}
+```
+
+Replace `/Users/you` with your home directory, then restart OpenCode.
+
 ## Local Development
 
 Requirements:
@@ -30,15 +52,12 @@ opencode2 .
 OpenCode discovers `.opencode/plugins/tui/status.tsx` automatically. Start or
 open a session to see the HUD under the prompt.
 
-## Probe Data
-
-`probes/status.tsx` is retained only as a diagnostic for the beta plugin API.
-It writes a full assistant-message sample to `opencode-hud-probe.json` in the
-active project. That file is ignored and may contain sensitive session data;
-do not commit or share it.
-
 ## Compatibility
 
 The OpenCode 2 plugin API is beta. Check [NOTES.md](./NOTES.md) and validate
 against the installed `@opencode-ai/plugin` runtime types after every OpenCode
 upgrade.
+
+## License
+
+MIT
