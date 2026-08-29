@@ -6,12 +6,13 @@ content to a session transcript.
 
 ## Current Status
 
-Milestone 1 is complete. The local development plugin renders a static
-`HUD probe active` label directly under the prompt. The API probe findings are
-recorded in [NOTES.md](./NOTES.md).
+Milestone 2 provides the default one-line HUD: model and provider, project and
+git branch with dirty state, native context usage, and session cost. The API
+probe findings are recorded in [NOTES.md](./NOTES.md).
 
-The context, cost, git, tool, and agent widgets are not implemented yet. This
-repository is not published as an installable package.
+Tool activity, subagents, todos, git file statistics, settings, and multiline
+layouts are not implemented yet. This repository is not published as an
+installable package.
 
 ## Local Development
 

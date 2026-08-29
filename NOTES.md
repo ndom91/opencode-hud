@@ -29,6 +29,9 @@ content. The probe requests mode `0600` for newly created output files.
    `context.data` inside a Solid component are reactive as well. The render
    callback itself should remain declarative; event subscriptions and polling
    belong in component lifecycle code and update a signal/store read by JSX.
+5. `data.location.vcs.info()` exposes branch information only. v1 uses the
+   explicitly approved local OpenCode client request `client.vcs.status()` for
+   dirty state, triggered by filesystem and branch events outside render.
 
 ## Observed Runtime Data
 
