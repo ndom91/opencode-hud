@@ -13,11 +13,7 @@ does not add HUD content to a session transcript.
 
 ## Install
 
-The package is published to npm as [`@ndom91/opencode-hud`](https://www.npmjs.com/package/@ndom91/opencode-hud).
-OpenCode installs and loads CLI plugins itself; you do not need to run `npm install` or `pnpm add`.
-
-Add it to the `plugins` array in `~/.config/opencode/cli.json`, preserving any
-existing plugins:
+Add it to the `plugins` array in `~/.config/opencode/cli.json`, for example:
 
 ```json
 {
@@ -29,11 +25,11 @@ existing plugins:
 
 OpenCode downloads and loads the package. Restart OpenCode after changing the configuration.
 
-To show 5h and weekly Codex usage, the HUD queries an OpenAI endpoint through
-your system's Codex authorization. This is disabled by default. See
-[PRIVACY.md](./PRIVACY.md) before enabling it with `OPENCODE_HUD_CODEX_USAGE=1`.
-We use the same mechanism as [CodexBar](https://github.com/steipete/CodexBar/)
-and others.
+> [!WARNING]
+> To show `5h` and `weekly` Codex subscription usage, the HUD plugin queries the OpenAI endpoint through
+your system's Codex authorization. This is disabled by default. See [PRIVACY.md](./PRIVACY.md) before 
+enabling it with `OPENCODE_HUD_CODEX_USAGE=1`. This is the same mechanism as used by 
+[CodexBar](https://github.com/steipete/CodexBar/) and others.
 
 ## Status Rows
 
@@ -108,10 +104,9 @@ opencode2 .
 OpenCode discovers `.opencode/plugins/tui/status.tsx` automatically. Start or
 open a session to see the HUD under the prompt.
 
-## Compatibility
-
-The OpenCode 2 plugin API is beta. Check [NOTES.md](./NOTES.md) and validate
-against the installed `@opencode-ai/plugin` runtime types.
+> [!NOTE]
+> The OpenCode 2 plugin API is beta and liable to change. Please check [NOTES.md](./NOTES.md) and validate
+against the installed `@opencode-ai/plugin` runtime types if making changes.
 
 ## License
 
