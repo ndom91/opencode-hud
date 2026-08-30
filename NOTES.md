@@ -50,7 +50,7 @@ content. The probe requests mode `0600` for newly created output files.
     policy as the parent session, without querying a provider.
 11. Tool parts expose a stable ID, name, state, and `time.{created,completed}`.
     A short tool-failure row can be derived from the newest failed part in the
-    latest assistant turn and expire locally from its completion timestamp.
+    current user turn and expire locally from its completion timestamp.
 12. OpenCode exposes no compaction threshold. The HUD's 80% warning is a
     conservative advisory based on the native context percentage; it must not
     be described as the point at which OpenCode will compact.
@@ -70,6 +70,19 @@ returned `"running"`, and VCS information returned
 Event types seen over 30 seconds included `session.execution.started`,
 `session.step.started`, `session.reasoning.*`, `session.text.*`,
 `session.tool.*`, `session.usage.updated`, `shell.created`, and `shell.exited`.
+
+## Smoke Test
+
+The current HUD was smoke-tested against `opencode2 v0.0.0-beta-18684` on
+2026-08-30 in a native tmux TUI session. The local plugin loaded in
+`prompt.footer.status`; Git, context, Codex usage, and recent tool activity
+rendered correctly.
+
+A shell command with exit code 1 has a native tool state of `completed`, so it
+does not show the dedicated failure row. A missing-file `read` has a native
+tool state of `error`; the HUD rendered `! read failed` immediately and removed
+it after 16 seconds. The test did not exercise a running subagent or the 80%
+compaction advisory.
 
 ## Beta Risks
 

@@ -38,7 +38,7 @@ The default HUD can show the following native TUI data:
 - Session context usage, including an amber `compaction likely soon` warning at
   80% usage and the active compaction state.
 - Up to two running shell commands and the four most recent tool activities.
-- The most recent failed tool for 15 seconds. A new assistant turn clears the
+- The most recent failed tool for 15 seconds. A new user turn clears the
   failure row.
 - Up to three running subagents, including elapsed time and their own context
   percentage.

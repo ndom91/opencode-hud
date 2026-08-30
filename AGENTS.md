@@ -11,7 +11,7 @@
 - Derive context usage only from native token fields and the selected model's
   context limit. The 80% compaction warning is a HUD advisory, not an OpenCode
   compaction trigger.
-- Show a tool failure only from the latest assistant turn and only within its
+- Show a tool failure only from the current user turn and only within its
   native completion timestamp window. Do not retain failure details outside the
   reactive TUI component.
 - Treat `opencode-hud-probe.json` as sensitive session data. It must remain

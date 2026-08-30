@@ -189,14 +189,20 @@ function recentToolParts(messages: ToolActivityProps["messages"]) {
 }
 
 function latestToolParts(messages: ToolActivityProps["messages"]) {
+  const tools = [];
+
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index];
+    if (message?.type === "user") {
+      break;
+    }
+
     if (message?.type === "assistant") {
-      return message.content.filter((part) => part.type === "tool");
+      tools.unshift(...message.content.filter((part) => part.type === "tool"));
     }
   }
 
-  return [];
+  return tools;
 }
 
 function AgentActivity(props: AgentActivityProps) {
