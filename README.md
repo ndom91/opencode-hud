@@ -27,6 +27,8 @@ OpenCode downloads and loads the package. Restart OpenCode after changing the co
 To show 5h and weekly Codex usage, the HUD queries an OpenAI endpoint through
 your system's Codex authorization. This is disabled by default. See
 [PRIVACY.md](./PRIVACY.md) before enabling it with `OPENCODE_HUD_CODEX_USAGE=1`.
+We use the same mechanism as [CodexBar](https://github.com/steipete/CodexBar/) 
+and others.
 
 ## Status Rows
 
