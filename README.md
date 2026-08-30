@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/%40ndom91/opencode-hud?style=flat-square&logo=npm&logoColor=white&label=npm)](https://www.npmjs.com/package/@ndom91/opencode-hud)
 [![npm downloads](https://img.shields.io/npm/dw/%40ndom91/opencode-hud?style=flat-square&logo=npm&logoColor=white&label=downloads)](https://www.npmjs.com/package/@ndom91/opencode-hud)
 [![license](https://img.shields.io/github/license/ndom91/opencode-hud?style=flat-square&label=license)](./LICENSE)
-[![OpenCode 2 plugin](https://img.shields.io/badge/OpenCode-2%20plugin-5E5CE6?style=flat-square)](https://opencode.ai)
+[![OpenCode 2 plugin](https://img.shields.io/badge/OpenCode2-%20plugin-5E5CE6?style=flat-square)](https://opencode.ai)
 
 OpenCode 2 plugin that displays a persistent status HUD below the text input in
 the TUI. It is a native TUI plugin, not an assistant-message renderer, so it
