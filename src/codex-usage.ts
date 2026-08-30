@@ -66,6 +66,12 @@ export async function loadCodexUsage(signal: AbortSignal, environment = process.
 
 async function usageCredential(environment: NodeJS.ProcessEnv): Promise<Credential | undefined> {
   const home = homedir();
+  const dataHome = nonEmpty(environment.XDG_DATA_HOME) ?? join(home, ".local", "share");
+  const openCode = await credentialFromFile(join(dataHome, "opencode", "auth.json"), parseOpenCodeCredential);
+  if (openCode.found) {
+    return openCode.credential;
+  }
+
   const codexHome = nonEmpty(environment.CODEX_HOME);
   const native = await credentialFromFile(join(codexHome ?? join(home, ".codex"), "auth.json"), parseCodexCredential);
   if (native.found || codexHome) {
@@ -77,9 +83,7 @@ async function usageCredential(environment: NodeJS.ProcessEnv): Promise<Credenti
     return legacy.credential;
   }
 
-  const dataHome = nonEmpty(environment.XDG_DATA_HOME) ?? join(home, ".local", "share");
-  const openCode = await credentialFromFile(join(dataHome, "opencode", "auth.json"), parseOpenCodeCredential);
-  return openCode.credential;
+  return undefined;
 }
 
 async function credentialFromFile(

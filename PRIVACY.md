@@ -12,9 +12,9 @@ the plugin options in `~/.config/opencode/cli.json` to enable it.
 
 When enabled, the HUD reads the first available OAuth credential from these paths:
 
-1. `$CODEX_HOME/auth.json`, or `~/.codex/auth.json` when `CODEX_HOME` is unset
-2. `~/.config/codex/auth.json` when `CODEX_HOME` is unset
-3. `$XDG_DATA_HOME/opencode/auth.json`, or `~/.local/share/opencode/auth.json` when `XDG_DATA_HOME` is unset
+1. `$XDG_DATA_HOME/opencode/auth.json`, or `~/.local/share/opencode/auth.json` when `XDG_DATA_HOME` is unset
+2. `$CODEX_HOME/auth.json`, or `~/.codex/auth.json` when `CODEX_HOME` is unset
+3. `~/.config/codex/auth.json` when `CODEX_HOME` is unset
 
 Only OAuth-shaped entries are accepted. API keys are ignored. If any listed credential file exists but cannot be parsed, the HUD fails closed and does not fall back to another application's file.
 
