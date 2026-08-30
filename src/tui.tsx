@@ -1,7 +1,7 @@
 import { Plugin } from "@opencode-ai/plugin/tui";
 import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
-import { codexUsageEnabled, codexUsageText, loadCodexUsage, type CodexUsage } from "./codex-usage.js";
+import { type CodexUsage, codexUsageEnabled, codexUsageText, loadCodexUsage } from "./codex-usage.js";
 import {
   compactionWarning,
   contextPercent,
@@ -12,7 +12,7 @@ import {
   recentToolFailure,
   toolActivity,
 } from "./hud-format.js";
-import { hudOptions, type HudOptions } from "./hud-options.js";
+import { type HudOptions, hudOptions } from "./hud-options.js";
 
 type GitStatusProps = {
   readonly branch?: string;

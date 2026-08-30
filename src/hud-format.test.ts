@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  type ContextInput,
   compactionWarning,
   contextPercent,
   contextUsage,
@@ -9,7 +10,6 @@ import {
   modelRef,
   recentToolFailure,
   toolActivity,
-  type ContextInput,
 } from "./hud-format.js";
 
 const context = (input: Partial<ContextInput>): ContextInput => ({

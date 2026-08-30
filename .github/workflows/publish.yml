@@ -19,7 +19,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm check
+      - run: pnpm format
+      - run: pnpm typecheck
       - run: pnpm test
       - run: npm install --global npm@latest
       - run: env -u NODE_AUTH_TOKEN npm publish --access public

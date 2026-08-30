@@ -16,5 +16,6 @@
   reactive TUI component.
 - Treat `opencode-hud-probe.json` as sensitive session data. It must remain
   ignored and never be added to commits.
-- Preserve the milestone boundary: implement, run `pnpm check` and `pnpm test`,
+- Preserve the milestone boundary: implement, run `pnpm format`, `pnpm typecheck`,
+  and `pnpm test`,
   then stop for user review before the next milestone.

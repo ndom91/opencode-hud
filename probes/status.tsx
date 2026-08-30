@@ -1,6 +1,6 @@
+import { writeFile } from "node:fs/promises";
 import { Plugin } from "@opencode-ai/plugin/tui";
 import { onMount } from "solid-js";
-import { writeFile } from "node:fs/promises";
 
 function json(value: unknown) {
   return JSON.stringify(value, null, 2);

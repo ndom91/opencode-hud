@@ -23,10 +23,9 @@
     "./tui": "./src/tui.tsx"
   },
   "scripts": {
-    "check": "tsc --noEmit",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
-    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
+    "format": "biome check .",
+    "format:write": "biome check --write .",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
