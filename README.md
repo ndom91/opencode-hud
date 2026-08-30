@@ -32,7 +32,7 @@ OpenCode downloads and loads the package. Restart OpenCode after changing the co
 To show 5h and weekly Codex usage, the HUD queries an OpenAI endpoint through
 your system's Codex authorization. This is disabled by default. See
 [PRIVACY.md](./PRIVACY.md) before enabling it with `OPENCODE_HUD_CODEX_USAGE=1`.
-We use the same mechanism as [CodexBar](https://github.com/steipete/CodexBar/) 
+We use the same mechanism as [CodexBar](https://github.com/steipete/CodexBar/)
 and others.
 
 ## Status Rows
@@ -83,21 +83,19 @@ package options in `~/.config/opencode/cli.json`:
 | `shell` | Running shell commands |
 | `tools` | Recent tool activity and brief tool-failure row |
 
-OpenCode's `Ctrl+P` -> **Open settings** opens its standard settings editor.
-Plugin options are JSON configuration, not a plugin-specific settings screen.
-
 ## Local Development
 
 Requirements:
 
-- `opencode2` v0.0.0-beta-18387 or a compatible newer beta
+- `opencode2`
 - Node.js 24+
 
-Install dependencies and validate the TypeScript source:
+Install dependencies and validate the project:
 
 ```sh
 pnpm install
-pnpm check
+pnpm format
+pnpm typecheck
 pnpm test
 ```
 
