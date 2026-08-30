@@ -1,5 +1,6 @@
+/** @jsxImportSource @opentui/solid */
 import { Plugin } from "@opencode-ai/plugin/tui";
-import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { type CodexUsage, codexUsageText, loadCodexUsage } from "./codex-usage.js";
 import {
@@ -36,7 +37,7 @@ type AgentActivityProps = {
 type HudProps = {
   readonly context: Plugin.Context;
   readonly options: HudOptions;
-  readonly sessionID?: string;
+  readonly sessionID: () => string | undefined;
 };
 
 const TOOL_HISTORY_MESSAGE_LIMIT = 32;
@@ -367,17 +368,28 @@ function CodexUsageStatus(props: { readonly context: Plugin.Context; readonly se
 function Hud(props: HudProps) {
   const [now, setNow] = createSignal(Date.now());
 
+  createEffect(() => {
+    const sessionID = props.sessionID();
+    if (!sessionID) {
+      return;
+    }
+
+    void props.context.data.session.sync(sessionID);
+    void props.context.data.session.message.sync(sessionID);
+  });
+
   onMount(() => {
     const timer = setInterval(() => setNow(Date.now()), 1_000);
     onCleanup(() => clearInterval(timer));
   });
 
   const session = () => {
-    if (!props.sessionID) {
+    const sessionID = props.sessionID();
+    if (!sessionID) {
       return undefined;
     }
 
-    return props.context.data.session.get(props.sessionID);
+    return props.context.data.session.get(sessionID);
   };
 
   const messages = () => {
@@ -464,7 +476,7 @@ function Hud(props: HudProps) {
         <ToolActivity context={props.context} messages={messages()} />
         <ToolFailure context={props.context} messages={messages()} now={now()} />
       </Show>
-      <Show when={props.options.agents && props.sessionID}>
+      <Show when={props.options.agents && props.sessionID()}>
         {(id) => <AgentActivity context={props.context} now={now()} sessionID={id()} />}
       </Show>
     </box>
@@ -502,7 +514,7 @@ export default Plugin.define({
     const options = hudOptions(context.options);
     return context.ui.slot({
       replace: "prompt.footer.status",
-      render: ({ sessionID }) => <Hud context={context} options={options} sessionID={sessionID} />,
+      render: (input) => <Hud context={context} options={options} sessionID={() => input.sessionID} />,
     });
   },
 });
