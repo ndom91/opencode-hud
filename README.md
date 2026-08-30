@@ -52,7 +52,7 @@ The default HUD can show the following native TUI data:
 ## Configuration
 
 The default HUD shows all available status rows. Disable individual groups with
-package options in the same `cli.json` file:
+package options in `~/.config/opencode/cli.json`:
 
 ```json
 {
