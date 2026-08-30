@@ -1,6 +1,6 @@
 {
   "name": "@ndom91/opencode-hud",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Persistent native status HUD for the OpenCode 2 TUI.",
   "license": "MIT",
   "repository": {
