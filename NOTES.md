@@ -24,7 +24,8 @@ content. The probe requests mode `0600` for newly created output files.
    reason (`auto` or `manual`), and recent-message marker.
 3. No provider rate-limit window API is exposed by the documented TUI context,
    installed runtime surface, or local OpenCode OpenAPI schema. Optional Codex
-   usage polling uses an explicit opt-in and an undocumented provider endpoint.
+    usage polling uses the explicit `codexUsage` package option and an
+    undocumented provider endpoint.
 4. `context.ui.slot(...).render` receives reactive slot props. Reads of
    `context.data` inside a Solid component are reactive as well. The render
    callback itself should remain declarative; event subscriptions and polling

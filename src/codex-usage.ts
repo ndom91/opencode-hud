@@ -19,10 +19,6 @@ type CredentialFile = {
   readonly found: boolean;
 };
 
-export function codexUsageEnabled(environment = process.env): boolean {
-  return environment.OPENCODE_HUD_CODEX_USAGE === "1";
-}
-
 export function codexUsageText(usage: CodexUsage): string | undefined {
   const parts = [];
   if (usage.primaryPercent !== undefined) parts.push(`5h ${usage.primaryPercent}%`);
@@ -47,10 +43,6 @@ export function parseCodexUsage(value: unknown): CodexUsage | undefined {
 }
 
 export async function loadCodexUsage(signal: AbortSignal, environment = process.env): Promise<CodexUsage | undefined> {
-  if (!codexUsageEnabled(environment)) {
-    return undefined;
-  }
-
   const credential = await usageCredential(environment);
   if (!credential) {
     return undefined;

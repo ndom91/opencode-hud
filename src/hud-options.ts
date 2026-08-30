@@ -10,7 +10,7 @@ export type HudOptions = {
 
 const DEFAULT_OPTIONS: HudOptions = {
   agents: true,
-  codexUsage: true,
+  codexUsage: false,
   compaction: true,
   context: true,
   git: true,
@@ -18,7 +18,7 @@ const DEFAULT_OPTIONS: HudOptions = {
   tools: true,
 };
 
-// hudOptions accepts only explicit false values so unknown or invalid options preserve the default HUD.
+// hudOptions accepts explicit booleans so unknown or invalid options preserve the default HUD.
 export function hudOptions(options: Readonly<Record<string, unknown>>): HudOptions {
   return {
     agents: enabled(options, "agents"),
@@ -32,5 +32,5 @@ export function hudOptions(options: Readonly<Record<string, unknown>>): HudOptio
 }
 
 function enabled(options: Readonly<Record<string, unknown>>, name: keyof HudOptions): boolean {
-  return options[name] === false ? false : DEFAULT_OPTIONS[name];
+  return typeof options[name] === "boolean" ? options[name] : DEFAULT_OPTIONS[name];
 }

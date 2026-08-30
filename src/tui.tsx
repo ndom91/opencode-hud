@@ -1,7 +1,7 @@
 import { Plugin } from "@opencode-ai/plugin/tui";
 import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
-import { type CodexUsage, codexUsageEnabled, codexUsageText, loadCodexUsage } from "./codex-usage.js";
+import { type CodexUsage, codexUsageText, loadCodexUsage } from "./codex-usage.js";
 import {
   compactionWarning,
   contextPercent,
@@ -318,10 +318,6 @@ function CodexUsageStatus(props: { readonly context: Plugin.Context; readonly se
   const [usage, setUsage] = createSignal<CodexUsage>();
 
   onMount(() => {
-    if (!codexUsageEnabled()) {
-      return;
-    }
-
     let active = true;
     let generation = 0;
     let request: AbortController | undefined;

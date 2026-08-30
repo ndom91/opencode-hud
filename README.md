@@ -27,9 +27,9 @@ OpenCode downloads and loads the package. Restart OpenCode after changing the co
 
 > [!WARNING]
 > To show `5h` and `weekly` Codex subscription usage, the HUD plugin queries the OpenAI endpoint through
-your system's Codex authorization. This is disabled by default. See [PRIVACY.md](./PRIVACY.md) before 
-enabling it with `OPENCODE_HUD_CODEX_USAGE=1`. This is the same mechanism as used by 
-[CodexBar](https://github.com/steipete/CodexBar/) and others.
+> your system's Codex authorization. This is disabled by default. See [PRIVACY.md](./PRIVACY.md) before
+> enabling it with the `codexUsage` package option. This is the same mechanism as used by
+> [CodexBar](https://github.com/steipete/CodexBar/) and others.
 
 ## Status Rows
 
@@ -57,7 +57,7 @@ package options in `~/.config/opencode/cli.json`:
       "package": "@ndom91/opencode-hud",
       "options": {
         "agents": false,
-        "codexUsage": false,
+        "codexUsage": true,
         "compaction": false,
         "context": true,
         "git": true,
@@ -72,7 +72,7 @@ package options in `~/.config/opencode/cli.json`:
 | Option | Controls |
 | --- | --- |
 | `agents` | Running subagents, elapsed time, and context usage |
-| `codexUsage` | Opt-in Codex 5-hour and weekly usage limits |
+| `codexUsage` | Disabled by default. Set to `true` to show Codex 5-hour and weekly usage limits. |
 | `compaction` | Active compaction state and the 80% context warning |
 | `context` | Current session context usage |
 | `git` | Branch, dirty state, and change summary |

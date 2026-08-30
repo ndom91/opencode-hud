@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { hudOptions } from "./hud-options.js";
 
 describe("hudOptions", () => {
-  it("enables every HUD item by default", () => {
+  it("enables native HUD items and disables Codex usage by default", () => {
     expect(hudOptions({})).toEqual({
       agents: true,
-      codexUsage: true,
+      codexUsage: false,
       compaction: true,
       context: true,
       git: true,
@@ -15,9 +15,10 @@ describe("hudOptions", () => {
     });
   });
 
-  it("disables only explicitly false options", () => {
-    expect(hudOptions({ agents: false, shell: false, tools: "no" })).toMatchObject({
+  it("accepts explicit booleans and defaults invalid options", () => {
+    expect(hudOptions({ agents: false, codexUsage: true, shell: false, tools: "no" })).toMatchObject({
       agents: false,
+      codexUsage: true,
       shell: false,
       tools: true,
     });

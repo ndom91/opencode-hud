@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { codexUsageEnabled, codexUsageText, parseCodexUsage } from "./codex-usage.js";
-
-describe("codexUsageEnabled", () => {
-  it("requires an explicit opt-in", () => {
-    expect(codexUsageEnabled({})).toBe(false);
-    expect(codexUsageEnabled({ OPENCODE_HUD_CODEX_USAGE: "1" })).toBe(true);
-  });
-});
+import { codexUsageText, parseCodexUsage } from "./codex-usage.js";
 
 describe("parseCodexUsage", () => {
   it("maps the primary and weekly Codex windows", () => {
