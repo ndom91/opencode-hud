@@ -81,8 +81,9 @@ rendered correctly.
 A shell command with exit code 1 has a native tool state of `completed`, so it
 does not show the dedicated failure row. A missing-file `read` has a native
 tool state of `error`; the HUD rendered `! read failed` immediately and removed
-it after 16 seconds. The test did not exercise a running subagent or the 80%
-compaction advisory.
+it after 16 seconds. A running explore subagent rendered its elapsed time and
+native context percentage. The test did not exercise the 80% compaction
+advisory.
 
 ## Beta Risks
 
